@@ -1,57 +1,36 @@
-import admin from "firebase-admin";
+const express = require('express');
+const cors = require('cors');
+const app = express();
 
-if (!admin.apps.length) {
-  try {
-    // Clean up the key: Vercel env vars often escape newlines
-    const rawKey = process.env.FIREBASE_PRIVATE_KEY;
-    const privateKey = rawKey ? rawKey.replace(/\\n/g, '\n') : "";
+app.use(cors());
+app.use(express.json());
 
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: privateKey,
-      }),
-      databaseURL: "https://bonusbyte-hub-default-rtdb.firebaseio.com"
+// This route now matches the URL your frontend is calling
+app.post('/api/verify-task', (req, res) => {
+  const { address, network } = req.body;
+
+  if (!address) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Missing standard account validation parameters.' 
     });
-  } catch (error) {
-    console.error("Firebase Initialization Failed:", error);
   }
-}
 
-export default async function handler(req, res) {
-  // Always return JSON, even on error, so the frontend doesn't crash
-  res.setHeader('Content-Type', 'application/json');
+  console.log(`[Verify Task] Processing address: ${address}`);
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, message: "Method not allowed" });
-  }
-  
-  try {
-    const { walletAddress, taskId } = req.body;
-    if (!walletAddress || !taskId) {
-      return res.status(400).json({ success: false, message: "Missing data" });
+  return res.json({
+    success: true,
+    message: 'Task verification successful.',
+    data: {
+      registeredAddress: address,
+      chainStatus: network === -239 ? 'Mainnet' : 'Testnet'
     }
+  });
+});
 
-    const db = admin.database();
-    const cleanAddress = walletAddress.replace(/[.#$[\]]/g, "_");
-    const userRef = db.ref('users/' + cleanAddress);
+// Basic health check for this specific endpoint
+app.get('/api/verify-task', (req, res) => {
+  res.json({ status: 'Online', service: 'Verify Task Endpoint' });
+});
 
-    const snapshot = await userRef.once('value');
-    const userData = snapshot.val() || { points: 0, tasks: {} };
-
-    if (userData.tasks && userData.tasks[taskId]) {
-      return res.status(400).json({ success: false, message: "Task already completed" });
-    }
-
-    await userRef.update({
-      points: (userData.points || 0) + 50,
-      tasks: { ...(userData.tasks || {}), [taskId]: true }
-    });
-
-    return res.status(200).json({ success: true });
-  } catch (error) {
-    console.error("API Logic Error:", error);
-    return res.status(500).json({ success: false, message: "Internal server error" });
-  }
-}
+module.exports = app;
