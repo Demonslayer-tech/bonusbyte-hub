@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "headers": [
+    {
+      "source": "/tonconnect-manifest.json",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" }
+      ]
+    }
+  ],
+  "builds": [
+    { "src": "package.json", "use": "@vercel/static-build", "config": { "distDir": "dist" } },
+    { "src": "backend/server.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "backend/server.js" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
