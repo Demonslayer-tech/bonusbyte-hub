@@ -8,7 +8,7 @@ import './App.css';
 
 function App() {
   return (
-    <TonConnectUIProvider manifestUrl="https://your-domain.com/tonconnect-manifest.json">
+    <TonConnectUIProvider manifestUrl="https://bonusbyte-hub.vercel.app/tonconnect-manifest.json">
       <Router>
         <div className="app-container">
           <Routes>
@@ -17,12 +17,11 @@ function App() {
             <Route path="/airdrop" element={<AirdropPage />} />
             <Route path="/user" element={<UserPage />} />
           </Routes>
-          
           <nav className="bottom-nav">
-            <Link to="/">Tap</Link>
-            <Link to="/earn">Earn</Link>
-            <Link to="/airdrop">Airdrop</Link>
-            <Link to="/user">Profile</Link>
+            <Link to="/">🎮 Tap</Link>
+            <Link to="/earn">✅ Earn</Link>
+            <Link to="/airdrop">🪂 Airdrop</Link>
+            <Link to="/user">👤 Profile</Link>
           </nav>
         </div>
       </Router>

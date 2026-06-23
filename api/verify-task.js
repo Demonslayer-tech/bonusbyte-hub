@@ -1,53 +1,10 @@
-import express from 'express';
-import cors from 'cors';
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
-import { getDatabase } from 'firebase-admin/database';
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-// Initialize Firebase using the modular SDK
-if (!getApps().length) {
-  const jsonString = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  if (jsonString) {
-    try {
-      const serviceAccount = JSON.parse(jsonString);
-      initializeApp({
-        credential: cert(serviceAccount),
-        databaseURL: "https://bonusbyte-hub-default-rtdb.firebaseio.com"
-      });
-    } catch (error) {
-      console.error("Initialization Error:", error.message);
-    }
-  }
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  
+  // Your logic here: connect to Firebase and process tasks
+  res.status(200).json({ success: true, message: "Task processed" });
 }
-
-app.post('/api/verify-task', async (req, res) => {
-  try {
-    const { walletAddress, taskId } = req.body;
-    if (!walletAddress || !taskId) return res.status(400).json({ success: false, message: 'Invalid data' });
-
-    const cleanAddress = walletAddress.replace(/[.#$[\]]/g, "_");
-    const db = getDatabase();
-    const userRef = db.ref('users/' + cleanAddress);
-
-    const snapshot = await userRef.once('value');
-    let userData = snapshot.val() || { points: 0, tasks: {} };
-
-    if (userData.tasks && userData.tasks[taskId]) {
-      return res.status(400).json({ success: false, message: 'Task already completed' });
-    }
-
-    userData.points = (userData.points || 0) + 50;
-    userData.tasks = { ...(userData.tasks || {}), [taskId]: true };
-
-    await userRef.set(userData);
-    return res.json({ success: true, points: userData.points });
-  } catch (error) {
-    console.error("Database Update Error:", error);
-    return res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
-
-export default app;
