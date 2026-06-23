@@ -1,21 +1,20 @@
 import express from 'express';
 import cors from 'cors';
-import admin from 'firebase-admin';
+import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getDatabase } from 'firebase-admin/database';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Initialize Firebase Admin using default import
-if (!admin.apps || admin.apps.length === 0) {
+// Initialize Firebase using the modular SDK
+if (!getApps().length) {
   const jsonString = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  
   if (jsonString) {
     try {
       const serviceAccount = JSON.parse(jsonString);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
+      initializeApp({
+        credential: cert(serviceAccount),
         databaseURL: "https://bonusbyte-hub-default-rtdb.firebaseio.com"
       });
     } catch (error) {
@@ -27,10 +26,7 @@ if (!admin.apps || admin.apps.length === 0) {
 app.post('/api/verify-task', async (req, res) => {
   try {
     const { walletAddress, taskId } = req.body;
-    
-    if (!walletAddress || !taskId) {
-      return res.status(400).json({ success: false, message: 'Invalid data' });
-    }
+    if (!walletAddress || !taskId) return res.status(400).json({ success: false, message: 'Invalid data' });
 
     const cleanAddress = walletAddress.replace(/[.#$[\]]/g, "_");
     const db = getDatabase();
