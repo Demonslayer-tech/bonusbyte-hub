@@ -48,9 +48,16 @@ function App() {
     });
 
     const data = await response.json();
+    
     if (response.ok && data.success) {
       alert("Task verified! +50 points.");
-      fetchUserData();
+      
+      // Update state immediately so UI reflects +50 points
+      setUserData(prev => ({
+        ...prev,
+        points: prev.points + 50,
+        tasks: { ...prev.tasks, [taskId]: true }
+      }));
     } else {
       alert("Error: " + (data.message || "Failed"));
     }
@@ -92,4 +99,4 @@ function App() {
   );
 }
 
-export default App; // This MUST be here for main.tsx to work
+export default App;
