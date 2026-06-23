@@ -12,7 +12,7 @@ interface UserData {
 const TASKS = [
   { id: 'telegram', title: 'Join Telegram Community', link: 'https://t.me/bonusbyte_announcement' },
   { id: 'twitter', title: 'Follow X/Twitter Page', link: 'https://x.com/bonusbyte?s=11' },
-  { id: 'youtube', title: 'Follow YouTube Page', link: 'https://youtube.com/@your_channel' },
+  { id: 'youtube', title: 'Follow YouTube Page', link: 'https://www.youtube.com/@Bonusbyte_app' },
   { id: 'checkin', title: 'Daily Check-in', link: '#' },
 ];
 
